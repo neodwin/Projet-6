@@ -12,7 +12,7 @@ app.use(express.json())
 
 // Routes
 app.post("/api/auth/signup", userSignup)
-app.get('/', (req, res) => res.send("Hello world"))
+app.get('/', (req, res) => res.send("Hello World"))
 
 // Exécution de backend sur le port 3000
 app.listen(port, () => console.log("listening on port" + port))
