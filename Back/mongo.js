@@ -1,7 +1,7 @@
    // Base de données
    const mongoose = require('mongoose')
 
-   // Variables d'environnements 
+   // Variables d'environnements
    const password = process.env.PASSWORD_MONGO
    const username = process.env.USER_MONGO
    const baseName = process.env.MONGO_NAME
