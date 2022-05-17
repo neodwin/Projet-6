@@ -11,7 +11,6 @@ async function userSignup(req, res) {
     const passwordHashing = await passwordHash(password)
 
     const user = new User({ email: email, password: passwordHashing })
-
     user.save()
         .then(() => res.status(201).send({ message: "utilisateur enregistré" }))
         .catch((err) => res.status(409).send({ message: "Utilisateur non enregistré :" + err }))
@@ -29,6 +28,10 @@ async function userLogin(req, res) {
         const email = req.body.email
         const password = req.body.password
         const user = await User.findOne({ email: email })
+        if (!user) {
+            return res.status(403).send({ message: "Utilisateur pas ok" })
+        }
+        const token = makingToken(email)
 
         const passwordOk = await bcrypt.compare(password, user.password)
         if (!passwordOk) {
@@ -38,7 +41,7 @@ async function userLogin(req, res) {
             res.status(200).send({ userId: user._id, token: token })
         }
 
-        const token = makingToken(email)
+
 
     } catch (err) {
         console.error(err)
