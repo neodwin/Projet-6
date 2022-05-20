@@ -1,22 +1,57 @@
-const jwt = require("jsonwebtoken")
+const mongoose = require("mongoose")
+
+const dataProduct = new mongoose.Schema({
+    userId: String,
+    name: String,
+    manufacturer: String,
+    description: String,
+    mainPepper: String,
+    imageUrl: String,
+    heat: Number,
+    likes: Number,
+    dislikes: Number,
+    usersLiked: [String],
+    usersDisliked: [String]
+})
+const Product = mongoose.model("Product", dataProduct)
 
 // Verification du token
+
 function getSauces(req, res) {
-    const header = req.header("Authorization")
 
-    if (header == null) return res.send(403).send({ message: "Invalide" })
-
-    const token = header.split(" ")[1]
-    if (token == null) return res.send(403).send({ message: "Le token ne peut pas être null" })
-
-    jwt.verify(token, process.env.PASSWORD_JWT, (err, decoded) => verifyToken(err, decoded, res))
+    Product.find({}).then((products => res.send(products)))
+        // res.send({ message: [{ sauce: "sauce1" }, { sauce: "sauce2" }] })
 }
 
-function verifyToken(err, decoded, res) {
-    if (err) res.status(403).send({ message: 'Token invalide' + err })
-    else {
-        res.send({ message: [{ sauce: "sauce1" }, { sauce: "sauce2" }] })
-    }
+function madeSauces(req, res) {
+    const file = req
+    const sauce = JSON.parse(req.body.sauce)
+    const name = sauce.name
+    const manufacturer = sauce.manufacturer
+    const description = sauce.description
+    const mainPepper = sauce.mainPepper
+    const heat = sauce.heat
+    const userId = sauce.userId
+
+    console.log("sauce:", sauce)
+    console.log({ body: req.body.sauce })
+    console.log({ file: req.file })
+    const { fileName } = file
+    const imageUrl = req.file.destination + req.file.filename
+
+    const product = new Product({
+        userId,
+        name,
+        manufacturer,
+        mainPepper,
+        imageUrl: req.protocol + "://" + req.get("host") + "images/" + fileName,
+        heat,
+        likes: 0,
+        dislikes: 0,
+        usersLiked: [],
+        usersDisliked: []
+    })
+    product.save().then((res) => console.log("produit enregistré", res)).catch(console.error)
 }
 
-module.exports = { getSauces }
+module.exports = { getSauces, madeSauces }
