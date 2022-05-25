@@ -20,7 +20,6 @@ const Product = mongoose.model("Product", dataProduct)
 function getSauces(req, res) {
 
     Product.find({}).then((products => res.send(products)))
-        // res.send({ message: [{ sauce: "sauce1" }, { sauce: "sauce2" }] })
 }
 
 function madeSauces(req, res) {
@@ -33,6 +32,7 @@ function madeSauces(req, res) {
     const fileName = req.file.fileName
 
     const imageUrl = req.protocol + "://" + req.get("host") + "/images/" + fileName;
+
 
     const product = new Product({
         userId: sauce.userId,

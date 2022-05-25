@@ -8,8 +8,8 @@ const path = require("path")
 
 // Chemin vers d'autres fichiers .js
 require("./mongo")
-const { userSignup, userLogin } = require("./users")
-const { getSauces, madeSauces } = require("./sauces")
+const { userSignup, userLogin } = require("./controllers/users")
+const { getSauces, madeSauces } = require("./controllers/sauces")
 
 // Middleware
 app.use(express.json())
