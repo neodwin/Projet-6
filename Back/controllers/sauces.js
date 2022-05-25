@@ -18,8 +18,16 @@ const Product = mongoose.model("Product", dataProduct)
 // Verification du token
 
 function getSauces(req, res) {
+    Product.find({})
+        .then((products => res.send(products)))
+        .catch(error => res.status(500).send(error))
+}
 
-    Product.find({}).then((products => res.send(products)))
+function getSaucesId(req, res) {
+    const id = req.params.id
+    Product.findById(id)
+        .then(product => res.send(product))
+        .catch(error => res.status(500).send(error))
 }
 
 function madeSauces(req, res) {
@@ -32,7 +40,6 @@ function madeSauces(req, res) {
     const fileName = req.file.fileName
 
     const imageUrl = req.protocol + "://" + req.get("host") + "/images/" + fileName;
-
 
     const product = new Product({
         userId: sauce.userId,
@@ -47,7 +54,11 @@ function madeSauces(req, res) {
         usersLiked: [],
         usersDisliked: []
     })
-    product.save().then((res) => console.log("produit enregistré", res)).catch(console.error)
+    product.save().then((message) => {
+            res.status(201).send({ message: message })
+            return console.log("produit enregistré", message)
+        })
+        .catch(console.error)
 }
 
-module.exports = { getSauces, madeSauces }
+module.exports = { getSauces, madeSauces, getSaucesId }

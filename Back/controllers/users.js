@@ -1,7 +1,6 @@
 const User = require("../mongo").user
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
-const { user } = require("../mongo")
 
 // Création signup
 async function userSignup(req, res) {
