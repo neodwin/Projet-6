@@ -1,13 +1,9 @@
 require('dotenv').config()
 const express = require("express")
 const app = express()
-const bodyParser = require("body-parser")
 
 //Middleware
 app.use(express.json())
-
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*')
@@ -16,4 +12,4 @@ app.use((req, res, next) => {
     next()
 })
 
-module.exports = { app, express, bodyParser }
+module.exports = { app, express }
