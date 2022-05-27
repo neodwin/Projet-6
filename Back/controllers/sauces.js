@@ -31,19 +31,60 @@ function getSaucesId(req, res) {
         .catch(error => res.status(500).send(error))
 }
 
+// Suppression sauce
+
 function deleteSauces(req, res) {
     const id = req.params.id
     Product.findByIdAndDelete(id)
         .then(deleteFile)
-        .then((product) => res.send({ message: product }))
+        .then((product) => statusSent({ message: product }))
         .catch((error) => res.status(500).send({ message: error }))
 }
+
+// Suppression de l'image
 
 function deleteFile(product) {
     const imageUrl = product.imageUrl
     const imageDelete = imageUrl.split("/").at(-1)
     return unlink(`images/${imageDelete}`).then(() => product)
 }
+
+// Modification sauce
+
+function modifySauces(req, res) {
+    const params = req.params
+    const id = params.id
+
+    const hasModifyImage = req.file != null
+    const anotherImage = madeAnotherImage(hasModifyImage, req)
+
+    Product.findByIdAndUpdate(id, anotherImage)
+        .then((product) => statusSent(product, res))
+        .catch(err => console.error("problème de mise à jour:", err))
+}
+
+function madeAnotherImage(hasModifyImage, req) {
+    console.log("hasModifyImage:", hasModifyImage)
+    if (!hasModifyImage) return req.body
+    const anotherImage = JSON.parse(req.body.sauce)
+    const fileName = req.file.fileName
+    anotherImage.imageUrl = req.protocol + "://" + req.get("host") + "/images/" + fileName;
+    return anotherImage
+}
+
+// Gestion d'erreur de la base donnée
+
+function statusSent(product, res) {
+    if (product == null) {
+        console.log("Rien à été mis à jour")
+        return res.status(404).send({ message: "Erreur dans la base de donnée" })
+    } else {
+        console.log("Tout a été mis à jour:", product)
+        res.status(200).send({ message: "Mis à jour avec succès" })
+    }
+}
+
+// Création d'une sauce
 
 function madeSauces(req, res) {
 
@@ -76,4 +117,4 @@ function madeSauces(req, res) {
         .catch(console.error)
 }
 
-module.exports = { getSauces, madeSauces, getSaucesId, deleteSauces }
+module.exports = { getSauces, madeSauces, getSaucesId, deleteSauces, modifySauces }

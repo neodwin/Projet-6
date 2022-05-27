@@ -6,7 +6,7 @@ const path = require("path")
 // Chemin vers d'autres fichiers .js
 require("./mongo")
 const { userSignup, userLogin } = require("./controllers/users")
-const { getSauces, madeSauces, getSaucesId, deleteSauces } = require("./controllers/sauces")
+const { getSauces, madeSauces, getSaucesId, deleteSauces, modifySauces } = require("./controllers/sauces")
 
 // Middleware
 const { upload } = require("./middleware/multer")
@@ -23,6 +23,7 @@ app.get("/api/sauces", validateUser, getSauces)
 app.post("/api/sauces", validateUser, upload.single("image"), madeSauces)
 app.get("/api/sauces/:id", validateUser, getSaucesId)
 app.delete("/api/sauces/:id", validateUser, deleteSauces)
+app.put("/api/sauces/:id", validateUser, upload.single("image"), modifySauces)
 app.get('/', (req, res) => res.send("Hello World"))
 
 // Exécution du backend sur le port 3000
