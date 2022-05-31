@@ -40,11 +40,8 @@ function getSaucesId(req, res) {
 function deleteSauces(req, res) {
     const id = req.params.id
     Product.findByIdAndDelete(id)
-        .then(deleteFile)
         .then((product) => statusSent(product, res))
-        .then((img) => deleteFile(img))
-        .then((res) => console.log("Image supprimé", res))
-        .catch(err => console.error("problème de mise à jour:", err))
+        .then((product) => deleteFile(product))
         .catch((error) => res.status(500).send({ message: error }))
 }
 
@@ -54,7 +51,8 @@ function deleteFile(product) {
     if (product == null) return
     const imageUrl = product.imageUrl
     const imageDelete = imageUrl.split("/").at(-1)
-    return unlink(`images/${imageDelete}`).then(() => product)
+    unlink(`images/${imageDelete}`)
+    console.log("IMAGE SUPPRIMEE")
 }
 
 // Modification sauce
@@ -69,7 +67,6 @@ function modifySauces(req, res) {
     Product.findByIdAndUpdate(id, anotherImage)
         .then((product) => statusSent(product, res))
         .then((product) => deleteFile(product))
-        .then((res) => console.log("Image supprimé", res))
         .catch(err => console.error("problème de mise à jour:", err))
 }
 
