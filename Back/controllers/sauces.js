@@ -24,11 +24,15 @@ function getSauces(req, res) {
         .catch(error => res.status(500).send(error))
 }
 
-function getSaucesId(req, res) {
+function sauceId(req, res) {
     const id = req.params.id
-    Product.findById(id)
-        .then(product => res.send(product))
-        .catch(error => res.status(500).send(error))
+    return Product.findById(id)
+}
+
+function getSaucesId(req, res) {
+    sauceId(req, res)
+        .then(product => statusSent(product, res))
+        .catch(((error) => res.status(500).send(error)))
 }
 
 // Suppression sauce
@@ -37,13 +41,17 @@ function deleteSauces(req, res) {
     const id = req.params.id
     Product.findByIdAndDelete(id)
         .then(deleteFile)
-        .then((product) => statusSent({ message: product }))
+        .then((product) => statusSent(product, res))
+        .then((img) => deleteFile(img))
+        .then((res) => console.log("Image supprimé", res))
+        .catch(err => console.error("problème de mise à jour:", err))
         .catch((error) => res.status(500).send({ message: error }))
 }
 
 // Suppression de l'image
 
 function deleteFile(product) {
+    if (product == null) return
     const imageUrl = product.imageUrl
     const imageDelete = imageUrl.split("/").at(-1)
     return unlink(`images/${imageDelete}`).then(() => product)
@@ -60,6 +68,8 @@ function modifySauces(req, res) {
 
     Product.findByIdAndUpdate(id, anotherImage)
         .then((product) => statusSent(product, res))
+        .then((product) => deleteFile(product))
+        .then((res) => console.log("Image supprimé", res))
         .catch(err => console.error("problème de mise à jour:", err))
 }
 
@@ -80,7 +90,8 @@ function statusSent(product, res) {
         return res.status(404).send({ message: "Erreur dans la base de donnée" })
     } else {
         console.log("Tout a été mis à jour:", product)
-        res.status(200).send({ message: "Mis à jour avec succès" })
+        return Promise.resolve(res.status(200).send(product))
+            .then(() => product)
     }
 }
 
@@ -117,4 +128,36 @@ function madeSauces(req, res) {
         .catch(console.error)
 }
 
-module.exports = { getSauces, madeSauces, getSaucesId, deleteSauces, modifySauces }
+// Gestion like & dislike
+function likeSauces(req, res) {
+    const like = req.body.like
+    const userId = req.body.userId
+    if (![0, -1, 1].includes(like)) return res.status(403).send({ message: "BAD REQUEST" })
+    sauceId(req, res)
+        .then((product) => anotherLike(product, like, userId))
+        .catch((err) => res.status(500).send(err))
+}
+
+function anotherLike(product, like, userId) {
+    if (like === 1) upLike(product, userId)
+    if (like === -1) downLike(product, userId)
+    if (like === 0) resetLike(product, userId)
+}
+
+function upLike(product, userId) {
+    const usersLiked = product.usersLiked
+    if (usersLiked.includes(userId)) return
+    usersLiked.push(userId)
+    product.likes++
+        console.log("Sauce après like:", product)
+}
+
+function downLike(product, userId) {
+    const usersDisliked = product.usersDisliked
+    if (usersDisliked.includes(userId)) return
+    usersDisliked.push(userId)
+    product.dislikes++
+        console.log("Sauce après dislike:", product)
+}
+
+module.exports = { getSauces, madeSauces, getSaucesId, deleteSauces, modifySauces, likeSauces }
