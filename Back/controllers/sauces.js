@@ -85,11 +85,10 @@ function statusSent(product, res) {
     if (product == null) {
         console.log("Rien à été mis à jour")
         return res.status(404).send({ message: "Erreur dans la base de donnée" })
-    } else {
-        console.log("Tout a été mis à jour:", product)
-        return Promise.resolve(res.status(200).send(product))
-            .then(() => product)
     }
+    console.log("Tout a été mis à jour:", product)
+    return Promise.resolve(res.status(200).send(product))
+        .then(() => product)
 }
 
 // Création d'une sauce
@@ -131,30 +130,41 @@ function likeSauces(req, res) {
     const userId = req.body.userId
     if (![0, -1, 1].includes(like)) return res.status(403).send({ message: "BAD REQUEST" })
     sauceId(req, res)
-        .then((product) => anotherLike(product, like, userId))
+        .then((product) => manageLike(product, like, userId, res))
+        .then(pr => pr.save())
+        .then(prod => statusSent(prod, res))
         .catch((err) => res.status(500).send(err))
 }
 
-function anotherLike(product, like, userId) {
-    if (like === 1) upLike(product, userId)
-    if (like === -1) downLike(product, userId)
-    if (like === 0) resetLike(product, userId)
+function manageLike(product, like, userId, res) {
+    if (like === 1 || like === -1) return updateLike(product, like, userId)
+    if (like === 0) return resetLike(product, userId, res)
 }
 
-function upLike(product, userId) {
-    const usersLiked = product.usersLiked
-    if (usersLiked.includes(userId)) return
-    usersLiked.push(userId)
-    product.likes++
-        console.log("Sauce après like:", product)
+function resetLike(product, userId, res) {
+    const { usersLiked, usersDisliked } = product
+    if ([usersLiked, usersDisliked].every((usersIdArray) => usersIdArray.includes(userId)))
+        return Promise.reject("l'utilisateur ne peut pas liker & disliker")
+    if (![usersLiked, usersDisliked].some((usersIdArray) => usersIdArray.includes(userId)))
+        return Promise.reject("l'utilisateur n'a pas voté")
+
+    usersLiked.includes(userId) ? --product.likes : --product.dislikes
+
+    let updateListUsers = usersLiked.includes(userId) ? usersLiked : usersDisliked
+    const filterUser = updateListUsers.filter((id) !== userId)
+    updateListUsers = filterUser
+    return product
 }
 
-function downLike(product, userId) {
-    const usersDisliked = product.usersDisliked
-    if (usersDisliked.includes(userId)) return
-    usersDisliked.push(userId)
-    product.dislikes++
-        console.log("Sauce après dislike:", product)
+function updateLike(product, like, userId) {
+    const { usersLiked, usersDisliked } = product
+
+    const likers = like === -1 ? usersLiked : usersDisliked
+    if (likers.includes(userId)) return product
+    likers.push(userId)
+
+    like === 1 ? ++product.likes : ++product.dislikes
+    return product
 }
 
 module.exports = { getSauces, madeSauces, getSaucesId, deleteSauces, modifySauces, likeSauces }
