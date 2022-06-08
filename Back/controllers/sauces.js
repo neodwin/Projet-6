@@ -20,8 +20,8 @@ const Product = mongoose.model("Product", dataProduct)
 
 function getSauces(req, res) {
     Product.find({})
-        .then((products => res.send(products)))
-        .catch(error => res.status(500).send(error))
+        .then((products) => res.send(products))
+        .catch((error) => res.status(500).send(error))
 }
 
 function sauceId(req, res) {
@@ -31,8 +31,8 @@ function sauceId(req, res) {
 
 function getSaucesId(req, res) {
     sauceId(req, res)
-        .then(product => statusSent(product, res))
-        .catch(((error) => res.status(500).send(error)))
+        .then((product) => statusSent(product, res))
+        .catch((error) => res.status(500).send(error))
 }
 
 // Suppression sauce
@@ -67,7 +67,7 @@ function modifySauces(req, res) {
     Product.findByIdAndUpdate(id, anotherImage)
         .then((product) => statusSent(product, res))
         .then((product) => deleteFile(product))
-        .catch(err => console.error("problème de mise à jour:", err))
+        .catch((err) => console.error("problème de mise à jour:", err))
 }
 
 function madeAnotherImage(hasModifyImage, req) {
@@ -125,44 +125,50 @@ function madeSauces(req, res) {
 }
 
 // Gestion like & dislike
+
+// Fonction d'appel du produit
 function likeSauces(req, res) {
     const like = req.body.like
     const userId = req.body.userId
-    if (![0, -1, 1].includes(like)) return res.status(403).send({ message: "BAD REQUEST" })
+    if (![1, -1, 0].includes(like)) return res.status(403).send({ message: "Invalid like value" })
     sauceId(req, res)
-        .then((product) => manageLike(product, like, userId, res))
-        .then(pr => pr.save())
-        .then(prod => statusSent(prod, res))
+        .then((product) => updateLike(product, like, userId, res))
+        .then((product) => product.save())
+        .then((product) => statusSent(product, res))
         .catch((err) => res.status(500).send(err))
 }
 
-function manageLike(product, like, userId, res) {
-    if (like === 1 || like === -1) return updateLike(product, like, userId)
-    if (like === 0) return resetLike(product, userId, res)
+// Fonction d'ajout d'un like ou dislike
+function updateLike(product, like, userId, res) {
+    if (like === 1 || like === -1) return modifyLike(product, userId, like)
+    return resetLike(product, userId, res)
 }
 
+// Fonction de gestion d'erreur du like ou dislike
 function resetLike(product, userId, res) {
-    const { usersLiked, usersDisliked } = product
-    if ([usersLiked, usersDisliked].every((usersIdArray) => usersIdArray.includes(userId)))
-        return Promise.reject("l'utilisateur ne peut pas liker & disliker")
-    if (![usersLiked, usersDisliked].some((usersIdArray) => usersIdArray.includes(userId)))
-        return Promise.reject("l'utilisateur n'a pas voté")
-
-    usersLiked.includes(userId) ? --product.likes : --product.dislikes
-
-    let updateListUsers = usersLiked.includes(userId) ? usersLiked : usersDisliked
-    const filterUser = updateListUsers.filter((id) !== userId)
-    updateListUsers = filterUser
+    const usersLiked = product.usersLiked
+    const usersDisliked = product.usersDisliked
+    if ([usersLiked, usersDisliked].every((array) => array.includes(userId)))
+        return Promise.reject("Error")
+    if (![usersLiked, usersDisliked].some((array) => array.includes(userId)))
+        return Promise.reject("Error")
+    if (usersLiked.includes(userId)) {
+        --product.likes
+        product.usersLiked = product.usersLiked.filter((id) => id !== userId)
+    } else {
+        --product.dislikes
+        product.usersDisliked = product.usersDisliked.filter((id) => id !== userId)
+    }
     return product
 }
 
-function updateLike(product, like, userId) {
-    const { usersLiked, usersDisliked } = product
-
-    const likers = like === -1 ? usersLiked : usersDisliked
-    if (likers.includes(userId)) return product
-    likers.push(userId)
-
+// Fonction d'ajout du userId dans le usersLiked ou usersDisliked
+function modifyLike(product, userId, like) {
+    const usersLiked = product.usersLiked
+    const usersDisliked = product.usersDisliked
+    const likersList = like === 1 ? usersLiked : usersDisliked
+    if (likersList.includes(userId)) return product
+    likersList.push(userId)
     like === 1 ? ++product.likes : ++product.dislikes
     return product
 }
