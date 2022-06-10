@@ -58,18 +58,16 @@ function deleteFile(product) {
 function modifySauces(req, res) {
     const params = req.params
     const id = params.id
-
     const hasModifyImage = req.file != null
     const anotherImage = madeAnotherImage(hasModifyImage, req)
-
     Product.findByIdAndUpdate(id, anotherImage)
         .then((product) => statusSent(product, res))
         .then((product) => deleteFile(product))
         .catch((err) => console.error("problème de mise à jour:", err))
 }
+
 // Fonction de modification de l'image
 function madeAnotherImage(hasModifyImage, req) {
-    console.log("hasModifyImage:", hasModifyImage)
     if (!hasModifyImage) return req.body
     const anotherImage = JSON.parse(req.body.sauce)
     const fileName = req.file.fileName
@@ -90,16 +88,9 @@ function statusSent(product, res) {
 
 // Création d'une sauce
 function madeSauces(req, res) {
-
     const sauce = JSON.parse(req.body.sauce)
-
-    console.log("sauce:", sauce)
-    console.log({ body: req.body.sauce })
-    console.log({ file: req.file })
     const fileName = req.file.fileName
-
     const imageUrl = req.protocol + "://" + req.get("host") + "/images/" + fileName;
-
     const product = new Product({
         userId: sauce.userId,
         name: sauce.name,
