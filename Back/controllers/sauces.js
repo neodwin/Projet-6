@@ -1,6 +1,7 @@
 const mongoose = require("mongoose")
 const unlink = require("fs").promises.unlink
 
+// Création d'un schéma de données Mongoose
 const dataProduct = new mongoose.Schema({
     userId: String,
     name: String,
@@ -16,14 +17,14 @@ const dataProduct = new mongoose.Schema({
 })
 const Product = mongoose.model("Product", dataProduct)
 
-// Verification du token
-
+// Fonction d'appel des sauces
 function getSauces(req, res) {
     Product.find({})
         .then((products) => res.send(products))
         .catch((error) => res.status(500).send(error))
 }
 
+//Fonction d'id unique de sauce
 function sauceId(req, res) {
     const id = req.params.id
     return Product.findById(id)
@@ -36,7 +37,6 @@ function getSaucesId(req, res) {
 }
 
 // Suppression sauce
-
 function deleteSauces(req, res) {
     const id = req.params.id
     Product.findByIdAndDelete(id)
@@ -46,7 +46,6 @@ function deleteSauces(req, res) {
 }
 
 // Suppression de l'image
-
 function deleteFile(product) {
     if (product == null) return
     const imageUrl = product.imageUrl
@@ -56,7 +55,6 @@ function deleteFile(product) {
 }
 
 // Modification sauce
-
 function modifySauces(req, res) {
     const params = req.params
     const id = params.id
@@ -69,7 +67,7 @@ function modifySauces(req, res) {
         .then((product) => deleteFile(product))
         .catch((err) => console.error("problème de mise à jour:", err))
 }
-
+// Fonction de modification de l'image
 function madeAnotherImage(hasModifyImage, req) {
     console.log("hasModifyImage:", hasModifyImage)
     if (!hasModifyImage) return req.body
@@ -80,7 +78,6 @@ function madeAnotherImage(hasModifyImage, req) {
 }
 
 // Gestion d'erreur de la base donnée
-
 function statusSent(product, res) {
     if (product == null) {
         console.log("Rien à été mis à jour")
@@ -92,7 +89,6 @@ function statusSent(product, res) {
 }
 
 // Création d'une sauce
-
 function madeSauces(req, res) {
 
     const sauce = JSON.parse(req.body.sauce)

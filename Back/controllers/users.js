@@ -6,9 +6,7 @@ const jwt = require("jsonwebtoken")
 async function userSignup(req, res) {
     const email = req.body.email
     const password = req.body.password
-
     const passwordHashing = await passwordHash(password)
-
     const user = new User({ email: email, password: passwordHashing })
     user.save()
         .then(() => res.status(201).send({ message: "utilisateur enregistré" }))
@@ -39,9 +37,6 @@ async function userLogin(req, res) {
         if (passwordOk) {
             res.status(200).send({ userId: user._id, token: token })
         }
-
-
-
     } catch (err) {
         console.error(err)
         res.status(500).send({ message: "Erreur interne" })

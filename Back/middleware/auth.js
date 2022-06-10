@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken")
 
+// Fonction de vérification du token
 function validateUser(req, res, next) {
     const header = req.header("Authorization")
 

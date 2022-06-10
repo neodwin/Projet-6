@@ -4,6 +4,7 @@ const { upload } = require("../middleware/multer")
 const { validateUser } = require("../middleware/auth")
 const saucesRouter = express.Router()
 
+// Route du fichier sauce.js
 saucesRouter.get("/", validateUser, getSauces)
 saucesRouter.post("/", validateUser, upload.single("image"), madeSauces)
 saucesRouter.get("/:id", validateUser, getSaucesId)

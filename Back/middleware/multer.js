@@ -1,5 +1,6 @@
 const multer = require("multer")
 
+// Fonction de stockage local des images
 const storage = multer.diskStorage({
     destination: "images/",
     filename: function(req, file, cb) {

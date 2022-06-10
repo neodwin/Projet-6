@@ -11,6 +11,7 @@
 
    const uri = `mongodb+srv://${username}:${password}@cluster0.gwipg.mongodb.net/${baseName}?retryWrites=true&w=majority`
 
+   // Connection à MongoDB
    mongoose
        .connect(uri)
        .then(() => console.log("connected to mongo"))
